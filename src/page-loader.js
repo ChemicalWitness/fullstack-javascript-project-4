@@ -1,15 +1,20 @@
-#!/usr/bin/env node
-import { Command } from 'commander'
+import fsp from 'fs/promises'
+import axios from 'axios'
+import path from 'path'
 
-const program = new Command()
+const buildFileName = (url) => {
+  const urlWithoutProtocol = url.replace(/^https:\/\//, '')
+  const urlWithoutSymbols = urlWithoutProtocol.replace(/[^a-zA-Z0-9]/g, '-')
+  return `${urlWithoutSymbols}.html`
+}
 
+const pageLoader = ( url, output = process.cwd()) => {
+  axios.get(url, { responseType: 'text' })
+    .then((data) => {
+      const filename = buildFileName(url)
+      const pathFile = path.join(output, filename)
+      fsp.writeFile(pathFile, data.data)
+    })
+}
 
-program
-  .name('page-loader')
-  .description('Page loader utility')
-  .version('1.0.0', '-V, --version', 'output the version number')
-  .option('-o, --output [dir]', 'output dir (default: "/home/user/current-dir")')
-  .argument('<url>')
-  .helpOption('-h, --help', 'display help for command')
-
-program.parse()
+export {pageLoader}

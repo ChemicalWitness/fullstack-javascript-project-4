@@ -2,6 +2,8 @@ import { expect, test } from '@jest/globals'
 import { fileURLToPath } from 'url'
 import path, { dirname } from 'path'
 import fs from 'fs'
+import nock from 'nock'
+import pageLoader from 'index.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
