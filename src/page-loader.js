@@ -13,7 +13,8 @@ const pageLoader = ( url, output = process.cwd()) => {
     .then((data) => {
       const filename = buildFileName(url)
       const pathFile = path.join(output, filename)
-      fsp.writeFile(pathFile, data.data)
+      console.log(data)
+      return fsp.writeFile(pathFile, data.data)
     })
 }
 
