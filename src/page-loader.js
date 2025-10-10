@@ -8,14 +8,14 @@ const buildFileName = (url) => {
   return `${urlWithoutSymbols}.html`
 }
 
-const pageLoader = ( url, output = process.cwd()) => {
-  axios.get(url, { responseType: 'text' })
+const pageLoader = (url, output = process.cwd()) => {
+  return axios.get(url, { responseType: 'text' })
     .then((data) => {
       const filename = buildFileName(url)
       const pathFile = path.join(output, filename)
-      console.log(data)
       return fsp.writeFile(pathFile, data.data)
+        .then(() => pathFile)
     })
 }
 
-export {pageLoader}
+export { pageLoader }

@@ -7,7 +7,7 @@
     "page-loader": "bin/page-loader.js"
   },
   "scripts": {
-    "test": "test",
+    "test": "jest",
     "lint": "npx eslint ."
   },
   "author": "",
