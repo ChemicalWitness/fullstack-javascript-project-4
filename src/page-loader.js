@@ -9,7 +9,8 @@ const buildFileName = (url) => {
 }
 
 const pageLoader = (url, output = process.cwd()) => {
-  return axios.get(url, { responseType: 'text' })
+  return fsp.mkdir(output, {recursive: true})
+    .then(() => axios.get(url, { responseType: 'text' }))
     .then((data) => {
       const filename = buildFileName(url)
       const pathFile = path.join(output, filename)
