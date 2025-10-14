@@ -12,14 +12,17 @@ const __dirname = dirname(__filename)
 const getFixturePath = filename => path.join(__dirname, '..', '__fixtures__', filename)
 nock.disableNetConnect()
 
-beforeEach(async () => {
+beforeAll(async () => {
   const resultFile = await fsp.readFile(getFixturePath('ru-hexlet-io-courses.html'), 'utf-8')
   nock('https://ru.hexlet.io')
+    .persist()  
     .get('/courses')
     .reply(200, resultFile);
 })
 
 let tmp;
+const url = 'https://ru.hexlet.io/courses';
+const pathToFile = 'ru-hexlet-io-courses.html';
 
 beforeEach( async () => {
   tmp = await fsp.mkdtemp(path.join(os.tmpdir(), 'page-loader-'))
@@ -27,25 +30,24 @@ beforeEach( async () => {
 
 
 test('page-loader get file', async () => {
-  const url = 'https://ru.hexlet.io/courses';
-  const pathToFile = 'ru-hexlet-io-courses.html';
   const filepath = path.join(tmp, pathToFile)
   const pathToFileFixtures = getFixturePath('ru-hexlet-io-courses.html')
   await pageLoader(url, tmp)
-  const hadFile = fs.existsSync(filepath)
+  const hadFile = fs.existsSync(filepath) // access
+  expect(hadFile).toBeTruthy();
   const expectedRead = await fsp.readFile(pathToFileFixtures, 'utf-8')
   const actualRead = await fsp.readFile(filepath, 'utf-8')
-  expect(hadFile).toBeTruthy();
   expect(expectedRead).toBe(actualRead)
 })
 
-test('page-loader check file', async () => {
-  const url = 'https://ru.hexlet.io/courses';
-  const pathToFile = 'ru-hexlet-io-courses.html';
+test('page-loader output', async () => {
   const filepath = path.join(tmp, pathToFile)
   const pathToFileFixtures = getFixturePath('ru-hexlet-io-courses.html')
-  await pageLoader(url, tmp)
+  process.chdir(tmp)
+  await pageLoader(url)
+  const hadFile = fs.existsSync(filepath) // access
+  expect(hadFile).toBeTruthy();
   const expectedRead = await fsp.readFile(pathToFileFixtures, 'utf-8')
   const actualRead = await fsp.readFile(filepath, 'utf-8')
-  expect(expectedRead).toEqual(actualRead)
+  expect(expectedRead).toBe(actualRead)
 })
