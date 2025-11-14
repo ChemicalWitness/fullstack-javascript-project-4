@@ -22,15 +22,6 @@ beforeAll(async () => {
     .reply(200, imageBuffer, { 'Content-Type': 'image/png' })
 })
 
-async function fileExists(filePath) {
-  try {
-    await fsp.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 let tmp;
 const url = 'https://ru.hexlet.io/courses';
 const expectedHtmlFile = 'ru-hexlet-io-courses.html';
@@ -51,9 +42,7 @@ test('page-loader get file', async () => {
 
   await pageLoader(url, tmp)
 
-  const hadFile = await fileExists(filepath)
-
-  expect(hadFile).toBeTruthy();
+  await expect(fsp.access(filepath)).resolves.toBeUndefined()
 
   const expectedRead = await fsp.readFile(pathToFileFixtures, 'utf-8')
   const actualRead = await fsp.readFile(filepath, 'utf-8')
@@ -69,9 +58,7 @@ test('page-loader output', async () => {
 
   await pageLoader(url)
 
-  const hadFile = await fileExists(filepath)
-
-  expect(hadFile).toBeTruthy();
+  await expect(fsp.access(filepath)).resolves.toBeUndefined()
 
   const expectedRead = await fsp.readFile(pathToFileFixtures, 'utf-8')
   const actualRead = await fsp.readFile(filepath, 'utf-8')
@@ -83,13 +70,13 @@ test('page-loader downloading images and create dir for this', async () => {
   await pageLoader(url, tmp)
 
   const htmlFilePath = path.join(tmp, expectedHtmlFile)
-  expect(await fileExists(htmlFilePath)).toBeTruthy()
+  await expect(fsp.access(htmlFilePath)).resolves.toBeUndefined()
 
   const resourcesDirPath = path.join(tmp, expectedResourcesDir)
-  expect(await fileExists(resourcesDirPath)).toBeTruthy()
+  await expect(fsp.access(resourcesDirPath)).resolves.toBeUndefined()
   
   const imageFilePath = path.join(resourcesDirPath, expectedImageFile)
-  expect(await fileExists(imageFilePath)).toBeTruthy()
+  await expect(fsp.access(imageFilePath)).resolves.toBeUndefined()
   
   const htmlContent = await fsp.readFile(htmlFilePath, 'utf-8')
   expect(htmlContent).toContain(`${expectedResourcesDir}/${expectedImageFile}`)
