@@ -2,6 +2,11 @@ import fsp from 'fs/promises'
 import axios from 'axios'
 import path from 'path'
 import * as cheerio from 'cheerio';
+import axiosDebugLog from 'axios-debug-log';
+import debug from 'debug';
+
+axiosDebugLog(axios);
+const log = debug('page-loader');
 
 const buildFileName = (url, ext = '.html') => {
   const urlWithoutProtocol = url.replace(/^https:\/\//, '')
@@ -18,13 +23,9 @@ const buildResourceName = (resourceUrl) => {
 }
 
 const isLocalResource = (resourceUrl, baseUrl) => {
-  try {
-    const resourceHost = new URL(resourceUrl, baseUrl).hostname;
-    const baseHost = new URL(baseUrl).hostname;
-    return resourceHost === baseHost;
-  } catch {
-    return false;
-  }
+  const resourceHost = new URL(resourceUrl, baseUrl).hostname;
+  const baseHost = new URL(baseUrl).hostname;
+  return resourceHost === baseHost ? true : false;
 }
 
 let htmlContent
@@ -50,21 +51,28 @@ const getFiles = (tags, attr, responseType, url, resourceData, output, downloadP
 }
 
 const pageLoader = (url, output = process.cwd()) => {
+  log('Starting...')
+  log(`creating directory for page`)
   return fsp.mkdir(output, {recursive: true})
-    .then(() => axios.get(url, { responseType: 'text' }))
+    .then(() => {
+      log(`request the main page on ${url}`)
+      return axios.get(url, { responseType: 'text' })
+    })
     .then((data) => {
       htmlContent = data.data
+      log(`parse html and files`)
       $ = cheerio.load(htmlContent)
       const filename = buildFileName(url)
       const resourceData = buildFileName(url, '_files')
       const resourcesPath = path.join(output, resourceData)
+      log(`create directory for assets`)
       return fsp.mkdir(resourcesPath, {recursive: true})
     .then(() => {
       const images = $('img')
       const links = $('link')
       const scripts = $('script')
       const downloadPromises = []
-
+      log(`get files on this main html page`)
       getFiles(images, 'src', 'arraybuffer', url, resourceData, output, downloadPromises);
       getFiles(links, 'href', 'text', url, resourceData, output, downloadPromises);
       getFiles(scripts, 'src', 'text', url, resourceData, output, downloadPromises);
@@ -74,14 +82,16 @@ const pageLoader = (url, output = process.cwd()) => {
     .then(() => {
       const modifiedHtml = $.html();
       const htmlFilePath = path.join(output, filename);
+      log(`rewrite html page with local assets`)
       return fsp.writeFile(htmlFilePath, modifiedHtml);
     })
     .then(() => {
       const htmlFilePath = path.join(output, filename);
+      log(`return html path and finish`)
       return htmlFilePath;
     })
   })
-    
+  
 }
 
 export { pageLoader }
