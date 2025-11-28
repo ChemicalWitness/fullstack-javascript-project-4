@@ -4,55 +4,24 @@ import path from 'path'
 import * as cheerio from 'cheerio';
 import axiosDebugLog from 'axios-debug-log';
 import debug from 'debug';
+import { buildFileName, buildResourceName, isLocalResource, getLocalAssets, transformingLinks, localAssetsInHtml, getAbsoluteLinks, downloadAssets } from './utils.js';
 
 axiosDebugLog(axios);
 const log = debug('page-loader');
 
-const buildFileName = (url, ext = '.html') => {
-  const urlWithoutProtocol = url.replace(/^https:\/\//, '')
-  const urlWithoutSymbols = urlWithoutProtocol.replace(/[^a-zA-Z0-9]/g, '-')
-  return `${urlWithoutSymbols}${ext}`
-}
-
-const buildResourceName = (resourceUrl) => {
-  const urlObj = new URL(resourceUrl);
-  const extension = path.extname(urlObj.pathname) || '.html';
-  const pathWithoutExtension = urlObj.pathname.replace(/\.[^/.]+$/, '');
-  const resourceName = `${urlObj.hostname}${pathWithoutExtension}`.replace(/[^a-zA-Z0-9]/g, '-');
-  return `${resourceName}${extension}`;
-}
-
-const isLocalResource = (resourceUrl, baseUrl) => {
-  const resourceHost = new URL(resourceUrl, baseUrl).hostname;
-  const baseHost = new URL(baseUrl).hostname;
-  return resourceHost === baseHost ? true : false;
-}
-
 let htmlContent
 let $
 
-const getFiles = (tags, attr, responseType, url, resourceData, output, downloadPromises) => {
-  tags.each((i, elem) => {
-    const src = $(elem).attr(attr)
-    if (!src) return;
-    
-    const absoluteUrl = new URL(src, url).href;
-    if (!isLocalResource(absoluteUrl, url)) return;
-    const resourceFileName = buildResourceName(absoluteUrl)
-    const localResourcePath = path.join(resourceData, resourceFileName);
-
-    $(elem).attr(attr, localResourcePath)
-
-    const downloadPromise = axios.get(absoluteUrl, {responseType: responseType})
-      .then((response) => fsp.writeFile(path.join(output, localResourcePath), response.data))
-    
-    downloadPromises.push(downloadPromise);
-  })
-}
-
 const pageLoader = (url, output = process.cwd()) => {
+
+  const filename = buildFileName(url)
+  const resourceData = buildFileName(url, '_files')
+  const resourcesPath = path.join(output, resourceData)
+
   log('Starting...')
+
   log(`creating directory for page`)
+
   return fsp.mkdir(output, {recursive: true})
     .then(() => {
       log(`request the main page on ${url}`)
@@ -62,22 +31,20 @@ const pageLoader = (url, output = process.cwd()) => {
       htmlContent = data.data
       log(`parse html and files`)
       $ = cheerio.load(htmlContent)
-      const filename = buildFileName(url)
-      const resourceData = buildFileName(url, '_files')
-      const resourcesPath = path.join(output, resourceData)
+      log(`get info of assets`)
+      const localAssetsLinks = getLocalAssets($, url)
+      const preparedLocalAssetslinks = transformingLinks(url, localAssetsLinks, resourceData)
+      log(`prepared html with local links assets`)
+      localAssetsInHtml($, localAssetsLinks, preparedLocalAssetslinks)
+
       log(`create directory for assets`)
       return fsp.mkdir(resourcesPath, {recursive: true})
     .then(() => {
-      const images = $('img')
-      const links = $('link')
-      const scripts = $('script')
-      const downloadPromises = []
-      log(`get files on this main html page`)
-      getFiles(images, 'src', 'arraybuffer', url, resourceData, output, downloadPromises);
-      getFiles(links, 'href', 'text', url, resourceData, output, downloadPromises);
-      getFiles(scripts, 'src', 'text', url, resourceData, output, downloadPromises);
+      const absoluteLinksOfAssets = getAbsoluteLinks(url, localAssetsLinks);
+      const promises = absoluteLinksOfAssets.map((link, i) => downloadAssets(link, path.join(output, preparedLocalAssetslinks[i]))
+      );
+      return Promise.all(promises);
 
-      return Promise.all(downloadPromises);
     })
     .then(() => {
       const modifiedHtml = $.html();
