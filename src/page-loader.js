@@ -5,6 +5,7 @@ import * as cheerio from 'cheerio';
 import axiosDebugLog from 'axios-debug-log';
 import debug from 'debug';
 import { buildFileName, buildResourceName, isLocalResource, getLocalAssets, transformingLinks, localAssetsInHtml, getAbsoluteLinks, downloadAssets } from './utils.js';
+import Listr from 'listr';
 
 axiosDebugLog(axios);
 const log = debug('page-loader');
@@ -23,7 +24,6 @@ const pageLoader = (url, output = process.cwd()) => {
   log('Starting...')
 
   log(`creating directory for page`)
- 
 
   return fsp.access(absoluteDirPath)
     .then(() => {
@@ -45,9 +45,18 @@ const pageLoader = (url, output = process.cwd()) => {
     .then(() => {
       const absoluteLinksOfAssets = getAbsoluteLinks(url, localAssetsLinks);
       log(`Downloading assets`)
-      const promises = absoluteLinksOfAssets.map((link, i) => downloadAssets(link, path.join(output, preparedLocalAssetslinks[i]))
-      );
-      return Promise.all(promises);
+
+      const tasks = absoluteLinksOfAssets.map((link, i) => ({
+        title: link,
+        task: () => downloadAssets(link, path.join(output, preparedLocalAssetslinks[i])),
+      }));
+      const listrTasks = new Listr(tasks, { concurrent: true });
+
+      return listrTasks.run().catch(() => {});
+
+      // const promises = absoluteLinksOfAssets.map((link, i) => downloadAssets(link, path.join(output, preparedLocalAssetslinks[i]))
+      // );
+      // return Promise.all(promises);
 
     })
     .then(() => {
