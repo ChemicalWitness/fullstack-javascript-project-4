@@ -1,5 +1,5 @@
 import fsp from 'fs/promises'
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import path from 'path'
 
 const ASSETS_ATTR = {
@@ -79,6 +79,22 @@ export const getAbsoluteLinks = (url, localAssets) => {
 export const downloadAssets = (link, filepath) => {
   return axios.get(link, {responseType: `arraybuffer`})
   .then((data) => fsp.writeFile(filepath, data.data))
+}
+
+export const handlerError = (error) => {
+  if (error.name === `Error`) {
+    console.error(`Error ${error.message}`)
+  } else if (error instanceof AxiosError) {
+    if (error.response && error.response.status !== 200) {
+      console.error(`Axios error. Server response with ${error.response.status}`)
+    } else if (error.request) {
+      console.error(`Axios error. Server no response`)
+    } else {
+      console.error(`Axios error`)
+    }
+  } else {
+    console.error(`Unknown error ${error.message}`)
+  }
 }
 
 // export const getFiles = (tags, attr, responseType, url, resourceData, output, downloadPromises) => {

@@ -14,6 +14,8 @@ let $
 
 const pageLoader = (url, output = process.cwd()) => {
 
+  const absoluteDirPath = path.resolve(process.cwd(), output);
+
   const filename = buildFileName(url)
   const resourceData = buildFileName(url, '_files')
   const resourcesPath = path.join(output, resourceData)
@@ -21,8 +23,9 @@ const pageLoader = (url, output = process.cwd()) => {
   log('Starting...')
 
   log(`creating directory for page`)
+ 
 
-  return fsp.mkdir(output, {recursive: true})
+  return fsp.access(absoluteDirPath)
     .then(() => {
       log(`request the main page on ${url}`)
       return axios.get(url, { responseType: 'text' })
@@ -38,9 +41,10 @@ const pageLoader = (url, output = process.cwd()) => {
       localAssetsInHtml($, localAssetsLinks, preparedLocalAssetslinks)
 
       log(`create directory for assets`)
-      return fsp.mkdir(resourcesPath, {recursive: true})
+      return fsp.mkdir(resourcesPath)
     .then(() => {
       const absoluteLinksOfAssets = getAbsoluteLinks(url, localAssetsLinks);
+      log(`Downloading assets`)
       const promises = absoluteLinksOfAssets.map((link, i) => downloadAssets(link, path.join(output, preparedLocalAssetslinks[i]))
       );
       return Promise.all(promises);

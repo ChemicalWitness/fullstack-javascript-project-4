@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander'
 import pageLoader from '../index.js'
+import { handlerError } from '../src/utils.js';
 
 const program = new Command()
 
@@ -13,8 +14,15 @@ program
   .argument('<url>')
   .helpOption('-h, --help', 'display help for command')
   .action(async ( url, options) =>  {
-    const result = await pageLoader(url, options.output)
-    console.log(result)
+    try {
+      const result = await pageLoader(url, options.output);
+      console.log('Success!');
+      console.log(`Downloaded to: ${result}`);
+      process.exit(0)
+    } catch (error) {
+      handlerError(error)
+      process.exit(1);
+    }
   })
 
 program.parse()

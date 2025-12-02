@@ -1,10 +1,11 @@
-import { expect, test, beforeAll, beforeEach, afterEach } from '@jest/globals'
+import { expect, test, beforeAll, beforeEach, afterEach, describe } from '@jest/globals'
 import { fileURLToPath } from 'url'
 import path, { dirname } from 'path'
 import fsp from 'fs/promises'
 import os from 'os'
 import nock from 'nock'
 import pageLoader from '../index.js'
+import { AxiosError } from 'axios'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -40,38 +41,56 @@ beforeEach( async () => {
   tmp = await fsp.mkdtemp(path.join(os.tmpdir(), 'page-loader-'))
 })
 
+describe('page-loader tests', () => {
+  test('page-loader', async () => {
+    const filepath = path.join(tmp, expectedHtmlFile)
+    const pathToFileFixtures = getFixturePath('ru-hexlet-io-courses-after.html')
+    const resourcesDirPath = path.join(tmp, expectedResourcesDir)
+    const imageFilePath = path.join(resourcesDirPath, expectedImageFile)
+    const cssFilePath = path.join(resourcesDirPath, expectedCssFile)
+    const jsFilePath = path.join(resourcesDirPath, expectedJsFile)
 
-test('page-loader', async () => {
-  const filepath = path.join(tmp, expectedHtmlFile)
-  const pathToFileFixtures = getFixturePath('ru-hexlet-io-courses-after.html')
-  const resourcesDirPath = path.join(tmp, expectedResourcesDir)
-  const imageFilePath = path.join(resourcesDirPath, expectedImageFile)
-  const cssFilePath = path.join(resourcesDirPath, expectedCssFile)
-  const jsFilePath = path.join(resourcesDirPath, expectedJsFile)
+    await pageLoader(url, tmp)
 
-  await pageLoader(url, tmp)
+    await expect(fsp.access(filepath)).resolves.toBeUndefined()
 
-  await expect(fsp.access(filepath)).resolves.toBeUndefined()
+    const expectedRead = await fsp.readFile(pathToFileFixtures, 'utf-8')
+    const actualRead = await fsp.readFile(filepath, 'utf-8')
 
-  const expectedRead = await fsp.readFile(pathToFileFixtures, 'utf-8')
-  const actualRead = await fsp.readFile(filepath, 'utf-8')
+    expect(expectedRead).toBe(actualRead)
 
-  expect(expectedRead).toBe(actualRead)
+    process.chdir(tmp)
+    await pageLoader(url)
 
-  process.chdir(tmp)
-  await pageLoader(url)
+    await expect(fsp.access(filepath)).resolves.toBeUndefined()
 
-  await expect(fsp.access(filepath)).resolves.toBeUndefined()
+    const expectedRead2 = await fsp.readFile(pathToFileFixtures, 'utf-8')
+    const actualRead2 = await fsp.readFile(filepath, 'utf-8')
+    expect(expectedRead2).toBe(actualRead2)
 
-  const expectedRead2 = await fsp.readFile(pathToFileFixtures, 'utf-8')
-  const actualRead2 = await fsp.readFile(filepath, 'utf-8')
-  expect(expectedRead2).toBe(actualRead2)
+    await expect(fsp.access(resourcesDirPath)).resolves.toBeUndefined()
+    await expect(fsp.access(imageFilePath)).resolves.toBeUndefined()
+    await expect(fsp.access(cssFilePath)).resolves.toBeUndefined()
+    await expect(fsp.access(jsFilePath)).resolves.toBeUndefined()
+    
+    const htmlContent = await fsp.readFile(filepath, 'utf-8')
+    expect(htmlContent).toContain(`${expectedResourcesDir}/${expectedImageFile}`)
+  })
+})
 
-  await expect(fsp.access(resourcesDirPath)).resolves.toBeUndefined()
-  await expect(fsp.access(imageFilePath)).resolves.toBeUndefined()
-  await expect(fsp.access(cssFilePath)).resolves.toBeUndefined()
-  await expect(fsp.access(jsFilePath)).resolves.toBeUndefined()
-  
-  const htmlContent = await fsp.readFile(filepath, 'utf-8')
-  expect(htmlContent).toContain(`${expectedResourcesDir}/${expectedImageFile}`)
+describe('failures', () => {
+  test('not exist link', async () => {
+    await expect(() => pageLoader('https://notexist.ru')).rejects.toBeInstanceOf(AxiosError)
+  })
+  test('not exist outpurDir', async () => {
+    await expect(() => pageLoader(url, '/not/existdir')).rejects.toThrow("ENOENT: no such file or directory, access '/not/existdir'")
+  })
+  test('not access outpurDir', async () => {
+    await expect(() => pageLoader(url, '/home')).rejects.toThrow("EACCES: permission denied, mkdir '/home/ru-hexlet-io-courses_files'")
+  })
+  test('already exist dir', async () => {
+    await pageLoader(url, tmp)
+    await expect(() => pageLoader(url, tmp)).rejects.toThrow(`EEXIST: file already exists, mkdir '${path.join(tmp, expectedResourcesDir)}'`)
+  })
+
 })
