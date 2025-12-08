@@ -67,7 +67,7 @@ const pageLoader = (url, output = process.cwd()) => {
     .then(() => {
       const modifiedHtml = $.html();
       const htmlFilePath = path.join(output, filename);
-      log(`rewrite html page with local assets`)
+      log(`rewrite html page ${htmlFilePath} with local assets`)
       return fsp.writeFile(htmlFilePath, modifiedHtml);
     })
     .then(() => {

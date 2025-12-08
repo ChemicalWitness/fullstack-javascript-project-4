@@ -1,6 +1,7 @@
 import fsp from 'fs/promises'
 import axios, { AxiosError } from 'axios'
 import path from 'path'
+import { log } from 'console'
 
 const ASSETS_ATTR = {
   img: 'src',
@@ -9,18 +10,23 @@ const ASSETS_ATTR = {
 }
 
 export const buildFileName = (url, ext = '.html') => {
+  log(`${url}`)
   const urlWithoutProtocol = url.replace(/^https:\/\//, '')
+  log(`${urlWithoutProtocol}`)
   const urlWithoutSymbols = urlWithoutProtocol.replace(/[^a-zA-Z0-9]/g, '-')
+  log(`${urlWithoutSymbols}`)
   return `${urlWithoutSymbols.trim()}${ext}`
 }
 
 export const buildResourceName = (resourceUrl) => {
+  log(`${resourceUrl}`)
   const urlObj = new URL(resourceUrl);
   const extension = path.extname(urlObj.pathname) || '.html';
   const pathWithoutExtension = urlObj.pathname.replace(/\.[^/.]+$/, '');
   const resourceName = `${urlObj.hostname}${pathWithoutExtension}`
     .replace(/[^a-zA-Z0-9]/g, '-')
     .replace(/^-+|-+$/g, '');
+  log(`${resourceName}`)
   return `${resourceName.trim()}${extension}`;
 }
 
