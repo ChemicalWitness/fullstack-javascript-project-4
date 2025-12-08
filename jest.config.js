@@ -22,6 +22,6 @@ export default {
     '/node_modules/',
     '/__tests__/',
     '/__fixtures__/',
-    '/coverage/'
+    '/coverage/',
   ],
 }
