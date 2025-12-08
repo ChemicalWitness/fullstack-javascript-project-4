@@ -11,7 +11,7 @@ const ASSETS_ATTR = {
 export const buildFileName = (url, ext = '.html') => {
   const urlWithoutProtocol = url.replace(/^https:\/\//, '')
   const urlWithoutSymbols = urlWithoutProtocol.replace(/[^a-zA-Z0-9]/g, '-')
-  return `${urlWithoutSymbols}${ext}`
+  return `${urlWithoutSymbols.trim()}${ext}`
 }
 
 export const buildResourceName = (resourceUrl) => {
