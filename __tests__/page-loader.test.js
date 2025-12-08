@@ -29,6 +29,8 @@ beforeAll(async () => {
     .reply(200, jsBuffer)
 })
 
+let tmp
+
 const url = 'https://ru.hexlet.io/courses'
 const expectedHtmlFile = 'ru-hexlet-io-courses.html'
 const expectedResourcesDir = 'ru-hexlet-io-courses_files'
@@ -36,35 +38,39 @@ const expectedImageFile = 'ru-hexlet-io-assets-professions-nodejs.png'
 const expectedCssFile = 'ru-hexlet-io-assets-application.css'
 const expectedJsFile = 'ru-hexlet-io-packs-js-runtime.js'
 
+beforeEach(async () => {
+  tmp = await fsp.mkdtemp(path.join(os.tmpdir(), 'page-loader-'))
+})
+
 describe('page-loader tests', () => {
-  let tmp
-  beforeAll(async () => {
-    tmp = await fsp.mkdtemp(path.join(os.tmpdir(), 'page-loader-'))
+  let pagePath;
+  let actualPagePath
+
+  beforeEach(async () => {
+    pagePath = path.join(tmp, expectedHtmlFile)
+    actualPagePath = await pageLoader(url, tmp)
   })
+
   test('page-loader', async () => {
-    const filepath = path.join(tmp, expectedHtmlFile)
     const pathToFileFixtures = getFixturePath('ru-hexlet-io-courses-after.html')
     const resourcesDirPath = path.join(tmp, expectedResourcesDir)
     const imageFilePath = path.join(resourcesDirPath, expectedImageFile)
     const cssFilePath = path.join(resourcesDirPath, expectedCssFile)
     const jsFilePath = path.join(resourcesDirPath, expectedJsFile)
 
-    await pageLoader(url, tmp)
 
-    await expect(fsp.access(filepath)).resolves.toBeUndefined()
+    await expect(fsp.access(pagePath)).resolves.toBeUndefined()
 
     const expectedRead = await fsp.readFile(pathToFileFixtures, 'utf-8')
-    const actualRead = await fsp.readFile(filepath, 'utf-8')
+    const actualRead = await fsp.readFile(pagePath, 'utf-8')
 
     expect(expectedRead).toBe(actualRead)
 
     process.chdir(tmp)
-    await pageLoader(url)
 
-    await expect(fsp.access(filepath)).resolves.toBeUndefined()
-    // Переписать
+    await expect(fsp.access(pagePath)).resolves.toBeUndefined()
     const expectedRead2 = await fsp.readFile(pathToFileFixtures, 'utf-8')
-    const actualRead2 = await fsp.readFile(filepath, 'utf-8')
+    const actualRead2 = await fsp.readFile(pagePath, 'utf-8')
     expect(expectedRead2).toBe(actualRead2)
 
     await expect(fsp.access(resourcesDirPath)).resolves.toBeUndefined()
@@ -72,16 +78,12 @@ describe('page-loader tests', () => {
     await expect(fsp.access(cssFilePath)).resolves.toBeUndefined()
     await expect(fsp.access(jsFilePath)).resolves.toBeUndefined()
 
-    const htmlContent = await fsp.readFile(filepath, 'utf-8')
+    const htmlContent = await fsp.readFile(pagePath, 'utf-8')
     expect(htmlContent).toContain(`${expectedResourcesDir}/${expectedImageFile}`)
   })
 })
 
 describe('failures', () => {
-  let tmp
-  beforeEach(async () => {
-    tmp = await fsp.mkdtemp(path.join(os.tmpdir(), 'page-loader-'))
-  })
   test('not exist link', async () => {
     await expect(() => pageLoader('https://notexist.ru')).rejects.toBeInstanceOf(AxiosError)
   })
