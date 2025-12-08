@@ -21,7 +21,7 @@ export const buildResourceName = (resourceUrl) => {
   const resourceName = `${urlObj.hostname}${pathWithoutExtension}`
     .replace(/[^a-zA-Z0-9]/g, '-')
     .replace(/^-+|-+$/g, '');
-  return `${resourceName}${extension}`;
+  return `${resourceName.trim()}${extension}`;
 }
 
 export const isLocalResource = (resourceUrl, baseUrl) => {

@@ -19,7 +19,12 @@ const pageLoader = (url, output = process.cwd()) => {
 
   const filename = buildResourceName(url)
   const resourceData = buildResourceName(url, '_files')
-  const resourcesPath = path.join(output, resourceData)
+  const resourcesPath = path.join(absoluteDirPath, resourceData)
+
+  log(`URL: ${url}`);
+  log(`Output directory: ${output}`);
+  log(`Absolute dir path: ${absoluteDirPath}`);
+  log(`Generated filename: ${filename}`)
 
   log('Starting...')
 
