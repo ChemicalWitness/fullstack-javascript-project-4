@@ -43,7 +43,7 @@ beforeEach(async () => {
 })
 
 describe('page-loader tests', () => {
-  let pagePath;
+  let pagePath
   let actualPagePath
 
   beforeEach(async () => {
@@ -58,7 +58,7 @@ describe('page-loader tests', () => {
     const cssFilePath = path.join(resourcesDirPath, expectedCssFile)
     const jsFilePath = path.join(resourcesDirPath, expectedJsFile)
 
-
+    await expect(pagePath).toEqual(actualPagePath)
     await expect(fsp.access(pagePath)).resolves.toBeUndefined()
 
     const expectedRead = await fsp.readFile(pathToFileFixtures, 'utf-8')
