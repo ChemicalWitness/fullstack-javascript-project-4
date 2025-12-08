@@ -6,7 +6,7 @@ export default {
   // Генерация покрытия кода
   collectCoverage: true,
   coverageDirectory: 'coverage', // папка для отчётов
-  coverageReporters: ['json', 'lcov', 'text', 'clover'],
+  coverageReporters: ['json', 'text', 'clover'],
 
   // Какие файлы включать в покрытие
   collectCoverageFrom: [
@@ -15,6 +15,8 @@ export default {
   roots: ['<rootDir>'],
   modulePaths: ['<rootDir>/src'],
   moduleDirectories: ['node_modules', 'src'],
+
+  rootDir: process.cwd(),
 
   transform: {},
 
