@@ -13,6 +13,7 @@ const getFixturePath = filename => path.join(__dirname, '..', '__fixtures__', fi
 nock.disableNetConnect()
 
 beforeAll(async () => {
+  tmp = await fsp.mkdtemp(path.join(os.tmpdir(), 'page-loader-'))
   const resultFile = await fsp.readFile(getFixturePath('ru-hexlet-io-courses-before.html'), 'utf-8')
   const imageBuffer = await fsp.readFile(getFixturePath('ru-hexlet-io-assets-professions-nodejs.png'))
   const cssBuffer = await fsp.readFile(getFixturePath('ru-hexlet-io-assets-application.css'))
@@ -29,7 +30,6 @@ beforeAll(async () => {
     .reply(200, jsBuffer)
 })
 
-let tmp;
 const url = 'https://ru.hexlet.io/courses';
 const expectedHtmlFile = 'ru-hexlet-io-courses.html';
 const expectedResourcesDir = 'ru-hexlet-io-courses_files'
@@ -37,11 +37,12 @@ const expectedImageFile = 'ru-hexlet-io-assets-professions-nodejs.png'
 const expectedCssFile = 'ru-hexlet-io-assets-application.css'
 const expectedJsFile = 'ru-hexlet-io-packs-js-runtime.js'
 
-beforeEach( async () => {
-  tmp = await fsp.mkdtemp(path.join(os.tmpdir(), 'page-loader-'))
-})
 
 describe('page-loader tests', () => {
+  let tmp;
+  beforeAll( async () => {
+    tmp = await fsp.mkdtemp(path.join(os.tmpdir(), 'page-loader-'))
+  })
   test('page-loader', async () => {
     const filepath = path.join(tmp, expectedHtmlFile)
     const pathToFileFixtures = getFixturePath('ru-hexlet-io-courses-after.html')
@@ -63,7 +64,7 @@ describe('page-loader tests', () => {
     await pageLoader(url)
 
     await expect(fsp.access(filepath)).resolves.toBeUndefined()
-
+    // Переписать
     const expectedRead2 = await fsp.readFile(pathToFileFixtures, 'utf-8')
     const actualRead2 = await fsp.readFile(filepath, 'utf-8')
     expect(expectedRead2).toBe(actualRead2)
@@ -79,6 +80,10 @@ describe('page-loader tests', () => {
 })
 
 describe('failures', () => {
+  let tmp;
+  beforeEach( async () => {
+    tmp = await fsp.mkdtemp(path.join(os.tmpdir(), 'page-loader-'))
+  })
   test('not exist link', async () => {
     await expect(() => pageLoader('https://notexist.ru')).rejects.toBeInstanceOf(AxiosError)
   })
