@@ -12,5 +12,16 @@ export default {
   collectCoverageFrom: [
     'src/**/*.js',
   ],
+  roots: ['<rootDir>'],
+  modulePaths: ['<rootDir>/src'],
+  moduleDirectories: ['node_modules', 'src'],
+
   transform: {},
+
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    '/__tests__/',
+    '/__fixtures__/',
+    '/coverage/'
+  ],
 }
