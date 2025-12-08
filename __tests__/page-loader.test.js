@@ -13,13 +13,12 @@ const getFixturePath = filename => path.join(__dirname, '..', '__fixtures__', fi
 nock.disableNetConnect()
 
 beforeAll(async () => {
-  tmp = await fsp.mkdtemp(path.join(os.tmpdir(), 'page-loader-'))
   const resultFile = await fsp.readFile(getFixturePath('ru-hexlet-io-courses-before.html'), 'utf-8')
   const imageBuffer = await fsp.readFile(getFixturePath('ru-hexlet-io-assets-professions-nodejs.png'))
   const cssBuffer = await fsp.readFile(getFixturePath('ru-hexlet-io-assets-application.css'))
   const jsBuffer = await fsp.readFile(getFixturePath('ru-hexlet-io-packs-js-runtime.js'))
   nock('https://ru.hexlet.io')
-    .persist()  
+    .persist()
     .get('/courses')
     .reply(200, resultFile)
     .get('/assets/professions/nodejs.png')
@@ -30,17 +29,16 @@ beforeAll(async () => {
     .reply(200, jsBuffer)
 })
 
-const url = 'https://ru.hexlet.io/courses';
-const expectedHtmlFile = 'ru-hexlet-io-courses.html';
+const url = 'https://ru.hexlet.io/courses'
+const expectedHtmlFile = 'ru-hexlet-io-courses.html'
 const expectedResourcesDir = 'ru-hexlet-io-courses_files'
 const expectedImageFile = 'ru-hexlet-io-assets-professions-nodejs.png'
 const expectedCssFile = 'ru-hexlet-io-assets-application.css'
 const expectedJsFile = 'ru-hexlet-io-packs-js-runtime.js'
 
-
 describe('page-loader tests', () => {
-  let tmp;
-  beforeAll( async () => {
+  let tmp
+  beforeAll(async () => {
     tmp = await fsp.mkdtemp(path.join(os.tmpdir(), 'page-loader-'))
   })
   test('page-loader', async () => {
@@ -73,29 +71,28 @@ describe('page-loader tests', () => {
     await expect(fsp.access(imageFilePath)).resolves.toBeUndefined()
     await expect(fsp.access(cssFilePath)).resolves.toBeUndefined()
     await expect(fsp.access(jsFilePath)).resolves.toBeUndefined()
-    
+
     const htmlContent = await fsp.readFile(filepath, 'utf-8')
     expect(htmlContent).toContain(`${expectedResourcesDir}/${expectedImageFile}`)
   })
 })
 
 describe('failures', () => {
-  let tmp;
-  beforeEach( async () => {
+  let tmp
+  beforeEach(async () => {
     tmp = await fsp.mkdtemp(path.join(os.tmpdir(), 'page-loader-'))
   })
   test('not exist link', async () => {
     await expect(() => pageLoader('https://notexist.ru')).rejects.toBeInstanceOf(AxiosError)
   })
   test('not exist outpurDir', async () => {
-    await expect(() => pageLoader(url, '/not/existdir')).rejects.toThrow("ENOENT: no such file or directory, access '/not/existdir'")
+    await expect(() => pageLoader(url, '/not/existdir')).rejects.toThrow('ENOENT: no such file or directory, access \'/not/existdir\'')
   })
   test('not access outpurDir', async () => {
-    await expect(() => pageLoader(url, '/home')).rejects.toThrow("EACCES: permission denied, mkdir '/home/ru-hexlet-io-courses_files'")
+    await expect(() => pageLoader(url, '/home')).rejects.toThrow('EACCES: permission denied, mkdir \'/home/ru-hexlet-io-courses_files\'')
   })
   test('already exist dir', async () => {
     await pageLoader(url, tmp)
     await expect(() => pageLoader(url, tmp)).rejects.toThrow(`EEXIST: file already exists, mkdir '${path.join(tmp, expectedResourcesDir)}'`)
   })
-
 })

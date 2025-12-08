@@ -1,30 +1,29 @@
 import fsp from 'fs/promises'
 import axios from 'axios'
 import path from 'path'
-import * as cheerio from 'cheerio';
-import axiosDebugLog from 'axios-debug-log';
-import debug from 'debug';
-import { buildResourceName, getLocalAssets, transformingLinks, localAssetsInHtml, getAbsoluteLinks, downloadAssets } from './utils.js';
-import Listr from 'listr';
+import * as cheerio from 'cheerio'
+import axiosDebugLog from 'axios-debug-log'
+import debug from 'debug'
+import { buildResourceName, getLocalAssets, transformingLinks, localAssetsInHtml, getAbsoluteLinks, downloadAssets } from './utils.js'
+import Listr from 'listr'
 
-axiosDebugLog(axios);
-const log = debug('page-loader');
+axiosDebugLog(axios)
+const log = debug('page-loader')
 
 let htmlContent
 let $
 
 const pageLoader = (url, output = process.cwd()) => {
-
-  const absoluteDirPath = path.resolve(process.cwd(), output);
+  const absoluteDirPath = path.resolve(process.cwd(), output)
 
   const filename = buildResourceName(url)
-  const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
+  const nameWithoutExt = filename.replace(/\.[^/.]+$/, '')
   const resourceData = `${nameWithoutExt}_files`
   const resourcesPath = path.join(absoluteDirPath, resourceData)
 
-  log(`URL: ${url}`);
-  log(`Output directory: ${output}`);
-  log(`Absolute dir path: ${absoluteDirPath}`);
+  log(`URL: ${url}`)
+  log(`Output directory: ${output}`)
+  log(`Absolute dir path: ${absoluteDirPath}`)
   log(`Generated filename: ${filename}`)
 
   log('Starting...')
@@ -47,32 +46,31 @@ const pageLoader = (url, output = process.cwd()) => {
       localAssetsInHtml($, localAssetsLinks, preparedLocalAssetslinks)
 
       log(`create directory for assets`)
-      return fsp.mkdir(resourcesPath, {recursive:true})
-    .then(() => {
-      const absoluteLinksOfAssets = getAbsoluteLinks(url, localAssetsLinks);
-      log(`Downloading assets`)
+      return fsp.mkdir(resourcesPath)
+        .then(() => {
+          const absoluteLinksOfAssets = getAbsoluteLinks(url, localAssetsLinks)
+          log(`Downloading assets`)
 
-      const tasks = absoluteLinksOfAssets.map((link, i) => ({
-        title: link,
-        task: () => downloadAssets(link, path.join(output, preparedLocalAssetslinks[i])),
-      }));
-      const listrTasks = new Listr(tasks, { concurrent: true });
+          const tasks = absoluteLinksOfAssets.map((link, i) => ({
+            title: link,
+            task: () => downloadAssets(link, path.join(output, preparedLocalAssetslinks[i])),
+          }))
+          const listrTasks = new Listr(tasks, { concurrent: true })
 
-      return listrTasks.run().catch(() => {});
-
+          return listrTasks.run().catch(() => {})
+        })
+        .then(() => {
+          const modifiedHtml = $.html()
+          const htmlFilePath = path.join(output, filename)
+          log(`rewrite html page ${htmlFilePath} with local assets`)
+          return fsp.writeFile(htmlFilePath, modifiedHtml)
+        })
+        .then(() => {
+          const htmlFilePath = path.join(output, filename)
+          log(`return html path and finish`)
+          return htmlFilePath
+        })
     })
-    .then(() => {
-      const modifiedHtml = $.html();
-      const htmlFilePath = path.join(output, filename);
-      log(`rewrite html page ${htmlFilePath} with local assets`)
-      return fsp.writeFile(htmlFilePath, modifiedHtml);
-    })
-    .then(() => {
-      const htmlFilePath = path.join(output, filename);
-      log(`return html path and finish`)
-      return htmlFilePath;
-    })
-  })
 }
 
 export { pageLoader }
