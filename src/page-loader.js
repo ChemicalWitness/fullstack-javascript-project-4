@@ -46,7 +46,7 @@ const pageLoader = (url, output = process.cwd()) => {
       localAssetsInHtml($, localAssetsLinks, preparedLocalAssetslinks)
 
       log(`create directory for assets`)
-      return fsp.mkdir(resourcesPath)
+      return fsp.mkdir(resourcesPath, {recursive:true})
     .then(() => {
       const absoluteLinksOfAssets = getAbsoluteLinks(url, localAssetsLinks);
       log(`Downloading assets`)
