@@ -9,15 +9,6 @@ const ASSETS_ATTR = {
   script: 'src'
 }
 
-export const buildFileName = (url, ext = '.html') => {
-  log(`${url}`)
-  const urlWithoutProtocol = url.replace(/^https:\/\//, '')
-  log(`${urlWithoutProtocol}`)
-  const urlWithoutSymbols = urlWithoutProtocol.replace(/[^a-zA-Z0-9]/g, '-')
-  log(`${urlWithoutSymbols}`)
-  return `${urlWithoutSymbols.trim()}${ext}`
-}
-
 export const buildResourceName = (resourceUrl) => {
   log(`${resourceUrl}`)
   const urlObj = new URL(resourceUrl);
@@ -102,22 +93,3 @@ export const handlerError = (error) => {
     console.error(`Unknown error ${error.message}`)
   }
 }
-
-// export const getFiles = (tags, attr, responseType, url, resourceData, output, downloadPromises) => {
-//   tags.each((i, elem) => {
-//     const src = $(elem).attr(attr)
-//     if (!src) return;
-    
-//     const absoluteUrl = new URL(src, url).href;
-//     if (!isLocalResource(absoluteUrl, url)) return;
-//     const resourceFileName = buildResourceName(absoluteUrl)
-//     const localResourcePath = path.join(resourceData, resourceFileName);
-
-//     $(elem).attr(attr, localResourcePath)
-
-//     const downloadPromise = axios.get(absoluteUrl, {responseType: responseType})
-//       .then((response) => fsp.writeFile(path.join(output, localResourcePath), response.data))
-    
-//     downloadPromises.push(downloadPromise);
-//   })
-// }

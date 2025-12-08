@@ -4,7 +4,7 @@ import path from 'path'
 import * as cheerio from 'cheerio';
 import axiosDebugLog from 'axios-debug-log';
 import debug from 'debug';
-import { buildFileName, buildResourceName, isLocalResource, getLocalAssets, transformingLinks, localAssetsInHtml, getAbsoluteLinks, downloadAssets } from './utils.js';
+import { buildResourceName, getLocalAssets, transformingLinks, localAssetsInHtml, getAbsoluteLinks, downloadAssets } from './utils.js';
 import Listr from 'listr';
 
 axiosDebugLog(axios);
@@ -60,10 +60,6 @@ const pageLoader = (url, output = process.cwd()) => {
 
       return listrTasks.run().catch(() => {});
 
-      // const promises = absoluteLinksOfAssets.map((link, i) => downloadAssets(link, path.join(output, preparedLocalAssetslinks[i]))
-      // );
-      // return Promise.all(promises);
-
     })
     .then(() => {
       const modifiedHtml = $.html();
@@ -77,7 +73,6 @@ const pageLoader = (url, output = process.cwd()) => {
       return htmlFilePath;
     })
   })
-  
 }
 
 export { pageLoader }
