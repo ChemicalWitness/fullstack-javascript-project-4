@@ -4,26 +4,13 @@ export default {
   // Тестовые файлы
   testMatch: ['**/__tests__/**/*.test.js'],
   // Генерация покрытия кода
-  collectCoverage: true,
+  collectCoverage: false,
   coverageDirectory: 'coverage', // папка для отчётов
-  coverageReporters: ['json', 'text', 'clover'],
+  coverageReporters: ['json', 'lcov', 'text', 'clover'],
 
   // Какие файлы включать в покрытие
   collectCoverageFrom: [
     'src/**/*.js',
   ],
-  roots: ['<rootDir>'],
-  modulePaths: ['<rootDir>/src'],
-  moduleDirectories: ['node_modules', 'src'],
-
-  rootDir: process.cwd(),
-
   transform: {},
-
-  coveragePathIgnorePatterns: [
-    '/node_modules/',
-    '/__tests__/',
-    '/__fixtures__/',
-    '/coverage/',
-  ],
 }
