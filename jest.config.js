@@ -1,24 +1,32 @@
 /** @type {import('jest').Config} */
 export default {
+  coverageDirectory: 'coverage',
   testEnvironment: 'node',
-  // Тестовые файлы
   testMatch: ['**/__tests__/**/*.test.js'],
-  // Генерация покрытия кода
   collectCoverage: true,
-  coverageDirectory: 'coverage', // папка для отчётов
+  coverageDirectory: 'coverage',
   coverageReporters: ['json', 'lcov', 'text', 'clover'],
-
-  // Какие файлы включать в покрытие
+  
   collectCoverageFrom: [
     'src/**/*.js',
   ],
-
+  
+  // Ключевые настройки для правильных путей:
   moduleNameMapper: {
-    '^src/(.*)$': '<rootDir>/src/$1',
+    '^src/(.*)$': '<rootDir>/src/$1'
   },
-
-  roots: ['<rootDir>'],
-  moduleDirectories: ['node_modules', 'src'],
-
+  
+  // Устанавливаем корневой каталог
+  rootDir: process.cwd(),
+  
+  // Используем process.cwd() вместо __dirname
+  modulePaths: ['<rootDir>/src', '<rootDir>/node_modules'],
+  
+  // Добавляем для правильной работы с путями
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    '/coverage/'
+  ],
+  
   transform: {},
 }
