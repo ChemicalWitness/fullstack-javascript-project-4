@@ -3,8 +3,14 @@ on: push
 env:
   CI: true
 jobs:
-  test-lint:
+  build:
     runs-on: ubuntu-latest
+
+    strategy:
+      # Node versions list
+      matrix:
+        node-version: [20.x, 22.x, 24.x]
+        
     steps:
       - uses: actions/checkout@v5
       - run: make install
