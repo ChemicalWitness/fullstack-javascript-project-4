@@ -14,11 +14,11 @@ export default {
   ],
 
   moduleNameMapper: {
-    '^src/(.*)$': '<rootDir>/src/$1'
+    '^src/(.*)$': '<rootDir>/src/$1',
   },
 
   roots: ['<rootDir>'],
   moduleDirectories: ['node_modules', 'src'],
-  
+
   transform: {},
 }
