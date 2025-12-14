@@ -1,17 +1,20 @@
-name: run-tests and lint
+name: Build
 on: push
 env:
   CI: true
 jobs:
-  test-lint:
+  sonarqube:
+    name: SonarQube
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - run: make install
       - run: make lint
       - run: make test
       - run: make test-coverage
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v7
+        uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
