@@ -4,7 +4,7 @@ export default {
   testMatch: ['**/__tests__/**/*.test.js'],
   collectCoverage: true,
   coverageDirectory: './coverage',
-  coverageReporters: ['html', ['lcovonly', { projectRoot: '../../' }], 'text-summary'],
+  coverageReporters: ['json', ['lcov', { projectRoot: process.cwd() }], 'text'],
 
   collectCoverageFrom: [
     'src/**/*.js',
