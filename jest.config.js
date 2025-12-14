@@ -3,8 +3,8 @@ export default {
   testEnvironment: 'node',
   testMatch: ['**/__tests__/**/*.test.js'],
   collectCoverage: true,
-  coverageDirectory: 'coverage',
-  coverageReporters: ['json', 'lcov', 'text', 'clover'],
+  coverageDirectory: './coverage',
+  coverageReporters: ['html', ['lcovonly', { projectRoot: '../../' }], 'text-summary'],
 
   collectCoverageFrom: [
     'src/**/*.js',
