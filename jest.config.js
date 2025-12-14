@@ -8,18 +8,14 @@ export default {
 
   collectCoverageFrom: [
     'src/**/*.js',
+    '!src/**/*.test.js',
   ],
 
-  // Ключевые настройки для правильных путей:
-  moduleNameMapper: {
-    '^src/(.*)$': '<rootDir>/src/$1',
-  },
-
   // Устанавливаем корневой каталог
-  rootDir: process.cwd(),
-
-  // Используем process.cwd() вместо __dirname
-  modulePaths: ['<rootDir>/src', '<rootDir>/node_modules'],
+  roots: ['.'],
+  rootDir: '.',
+  modulePaths: ['.'],
+  moduleDirectories: ['node_modules', '.'],
 
   // Добавляем для правильной работы с путями
   coveragePathIgnorePatterns: [
