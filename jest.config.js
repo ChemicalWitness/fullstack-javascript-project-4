@@ -4,7 +4,7 @@ export default {
   testMatch: ['**/__tests__/**/*.test.js'],
   collectCoverage: true,
   coverageDirectory: 'coverage',
-  coverageReporters: ['json', 'lcov', 'text', 'clover'],
+  coverageReporters: ['json', 'text', 'clover'],
 
   collectCoverageFrom: [
     'src/**/*.js',
@@ -12,16 +12,18 @@ export default {
   ],
 
   // Устанавливаем корневой каталог
-  roots: ['.'],
-  rootDir: '.',
-  modulePaths: ['.'],
-  moduleDirectories: ['node_modules', '.'],
+  roots: [process.cwd()],
+  rootDir: process.cwd(),
+  modulePaths: [process.cwd()],
 
   // Добавляем для правильной работы с путями
   coveragePathIgnorePatterns: [
     '/node_modules/',
     '/coverage/',
+    '/__tests__/',
   ],
 
   transform: {},
+
+  coverageProvider: 'v8',
 }
