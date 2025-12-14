@@ -16,7 +16,6 @@ export const buildResourceName = (resourceUrl) => {
   const pathWithoutExtension = urlObj.pathname.replace(/\.[^/.]+$/, '')
   const resourceName = `${urlObj.hostname}${pathWithoutExtension}`
     .replace(/[^a-zA-Z0-9]/g, '-')
-    .replace(/^-+|-+$/g, '')
   log(`${resourceName}`)
   return `${resourceName.trim()}${extension}`
 }
