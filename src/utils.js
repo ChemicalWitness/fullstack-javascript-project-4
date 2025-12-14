@@ -48,7 +48,6 @@ export const transformingLinks = (url, localAssets, assetsDirName) => {
     const pathWithoutExtension = assetsUrl.pathname.replace(/\.[^/.]+$/, '')
     const resourceName = `${assetsUrl.hostname}${pathWithoutExtension}`
       .replace(/[^a-zA-Z0-9]/g, '-')
-      .replace(/^-+|-+$/g, '')
 
     const transformedLink = `${resourceName}${extension}`
     localAssetsLinks.push(path.join(assetsDirName, transformedLink))
