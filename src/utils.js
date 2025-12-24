@@ -1,7 +1,6 @@
 import fsp from 'fs/promises'
 import axios, { AxiosError } from 'axios'
 import path from 'path'
-import { log } from 'console'
 
 const ASSETS_ATTR = {
   img: 'src',
@@ -10,13 +9,11 @@ const ASSETS_ATTR = {
 }
 
 export const buildResourceName = (resourceUrl) => {
-  log(`${resourceUrl}`)
   const urlObj = new URL(resourceUrl)
   const extension = path.extname(urlObj.pathname) || '.html'
   const pathWithoutExtension = urlObj.pathname.replace(/\.[^/.]+$/, '')
   const resourceName = `${urlObj.hostname}${pathWithoutExtension}`
     .replace(/[^a-zA-Z0-9]/g, '-')
-  log(`${resourceName}`)
   return `${resourceName.trim()}${extension}`
 }
 
