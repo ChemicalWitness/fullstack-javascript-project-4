@@ -12,17 +12,17 @@ program
   .option('-o, --output [dir]', 'output dir (default: "/home/user/current-dir")', process.cwd())
   .argument('<url>')
   .helpOption('-h, --help', 'display help for command')
-  .action(async (url, options) => {
-    try {
-      const result = await pageLoader(url, options.output)
-      console.log('Success!')
-      console.log(`Downloaded to: ${result}`)
-      process.exit(0)
-    }
-    catch (error) {
-      handlerError(error)
-      process.exit(1)
-    }
+  .action((url) => {
+    pageLoader(url, options.output)
+      .then((result) => {
+        console.log(`Success!`)
+        console.log(`Downloaded to: ${result}`)
+        process.exit(0)
+      })
+      .catch((error) => {
+        console.error(error)
+        process.exit(1)
+      })
   })
 
 program.parse()
