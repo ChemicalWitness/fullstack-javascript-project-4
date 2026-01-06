@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import { Command } from 'commander'
 import pageLoader from '../index.js'
-import { handlerError } from '../src/utils.js'
 
 const program = new Command()
 

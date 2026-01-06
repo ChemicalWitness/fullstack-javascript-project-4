@@ -4,7 +4,7 @@ import path from 'path'
 import * as cheerio from 'cheerio'
 import axiosDebugLog from 'axios-debug-log'
 import debug from 'debug'
-import { buildResourceName, getLocalAssets, transformingLinks, localAssetsInHtml, getAbsoluteLinks, downloadAssets, prepareAssets } from './utils.js'
+import { buildResourceName, downloadAssets, prepareAssets } from './utils.js'
 import Listr from 'listr'
 
 axiosDebugLog(axios)
@@ -12,8 +12,6 @@ const log = debug('page-loader')
 
 let htmlContent
 let $
-// let localAssetsLinks
-// let assets = [];
 
 const pageLoader = (url, output = process.cwd()) => {
   const absoluteDirPath = path.resolve(process.cwd(), output)

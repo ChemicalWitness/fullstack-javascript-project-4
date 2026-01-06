@@ -38,7 +38,6 @@ const expectedImageFile = 'ru-hexlet-io-assets-professions-nodejs.png'
 const expectedCssFile = 'ru-hexlet-io-assets-application.css'
 const expectedJsFile = 'ru-hexlet-io-packs-js-runtime.js'
 
-
 beforeEach(async () => {
   tmp = await fsp.mkdtemp(path.join(os.tmpdir(), 'page-loader-'))
 })
@@ -54,7 +53,6 @@ describe('page-loader tests', () => {
 
   test('page-loader specified directory', async () => {
     const pathToFileFixtures = getFixturePath('ru-hexlet-io-courses-after.html')
-    const resourcesDirPath = path.join(tmp, expectedResourcesDir)
 
     await expect(pagePath).toEqual(actualPagePath)
     await expect(fsp.access(pagePath)).resolves.not.toThrow()
@@ -86,7 +84,6 @@ describe('page-loader tests', () => {
     const htmlContent = await fsp.readFile(pagePath, 'utf-8')
     expect(htmlContent).toContain(`${expectedResourcesDir}/${expectedImageFile}`)
   })
-    
 })
 
 describe('failures', () => {
