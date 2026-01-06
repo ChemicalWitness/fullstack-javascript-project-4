@@ -4,7 +4,7 @@ import path from 'path'
 import * as cheerio from 'cheerio'
 import axiosDebugLog from 'axios-debug-log'
 import debug from 'debug'
-import { buildResourceName, getLocalAssets, transformingLinks, localAssetsInHtml, getAbsoluteLinks, downloadAssets } from './utils.js'
+import { buildResourceName, getLocalAssets, transformingLinks, localAssetsInHtml, getAbsoluteLinks, downloadAssets, prepareAssets } from './utils.js'
 import Listr from 'listr'
 
 axiosDebugLog(axios)
@@ -12,8 +12,8 @@ const log = debug('page-loader')
 
 let htmlContent
 let $
-let localAssetsLinks
-let preparedLocalAssetslinks;
+// let localAssetsLinks
+// let assets = [];
 
 const pageLoader = (url, output = process.cwd()) => {
   const absoluteDirPath = path.resolve(process.cwd(), output)
@@ -41,19 +41,13 @@ const pageLoader = (url, output = process.cwd()) => {
       htmlContent = data.data
       log(`parse html and files`)
       $ = cheerio.load(htmlContent)
-      log(`get info of assets`)
-      localAssetsLinks = getLocalAssets($, url)
-      preparedLocalAssetslinks = transformingLinks(url, localAssetsLinks, resourceData)
-      log(`prepared html with local links assets`)
-      localAssetsInHtml($, localAssetsLinks, preparedLocalAssetslinks)
-
       log(`create directory for assets`)
       return fsp.mkdir(resourcesPath)
     })
     .then(() => {
-      const absoluteLinksOfAssets = getAbsoluteLinks(url, localAssetsLinks)
+      log(`prepared html with local links assets`)
+      const [preparedLocalAssetslinks, absoluteLinksOfAssets] = prepareAssets($, url, resourceData)
       log(`Downloading assets`)
-
       const tasks = absoluteLinksOfAssets.map((link, i) => ({
         title: link,
         task: () => downloadAssets(link, path.join(output, preparedLocalAssetslinks[i])),

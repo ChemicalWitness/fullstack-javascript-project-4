@@ -92,3 +92,11 @@ export const handlerError = (error) => {
     console.error(`Unknown error ${error.message}`)
   }
 }
+
+export const prepareAssets = (cherrioHtmlFile, url, resourceDir) => {
+  const localAssets = getLocalAssets(cherrioHtmlFile, url)
+  const preparedLocalAssetslinks = transformingLinks(url, localAssets, resourceDir)
+  localAssetsInHtml(cherrioHtmlFile, localAssets, preparedLocalAssetslinks)
+  const absoluteLinksOfAssets = getAbsoluteLinks(url, localAssets)
+  return [preparedLocalAssetslinks, absoluteLinksOfAssets]
+}
