@@ -4,20 +4,21 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ChemicalWitness_fullstack-javascript-project-4&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ChemicalWitness_fullstack-javascript-project-4)
 
 # fullstack-javascript-project-4
-# Page-loader (Загрузчик страниц)
+# Page-loader
 
 ## Requirements:
 Use NODE.JS 20.8 or higher
 
-## Page-loader - это утилита командной строки, которая скачивает страницу из сети и кладёт её в указанную директорию(по умолчанию в директорию запуска программы). Программа должна возвращать путь до загруженного файла.
+## Page-loader - This is a command-line utility that downloads a page from the network and places it in the specified directory (by default, the program's launch directory). The program should return the path to the downloaded file.
 
-## Как пользоваться?
-Помощь в использовании page-loader -h 
-Запуск page-loader --output [dir] <url>
-Где:
-page-loader - это название утилиты 
---output - это опциональный флаг с помощью которого, задается директория для скачивания страницы(по умол. директория запуска утилиты)
-url - это адрес страницы
+## How to used?
+**Help**
+`page-loader -h `
+**Run**
+`page-loader --output [dir] <url>`
+`page-loader`: *Name util*
+`--output`: *this is an optional flag that is used to set the directory for downloading the page (by default. the startup directory of the utility)*
+`<url>`: *Page Address*
 
-## Пример использования
+## Example
 [![asciicast](https://asciinema.org/a/3iVKQSY1gavLQTemPp2V1ljmZ.svg)](https://asciinema.org/a/3iVKQSY1gavLQTemPp2V1ljmZ)
