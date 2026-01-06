@@ -12,12 +12,19 @@ Use NODE.JS 20.8 or higher
 ## Page-loader - This is a command-line utility that downloads a page from the network and places it in the specified directory (by default, the program's launch directory). The program should return the path to the downloaded file.
 
 ## How to used?
+
 **Help**
+
 `page-loader -h `
+
 **Run**
+
 `page-loader --output [dir] <url>`
+
 `page-loader`: *Name util*
+
 `--output`: *this is an optional flag that is used to set the directory for downloading the page (by default. the startup directory of the utility)*
+
 `<url>`: *Page Address*
 
 ## Example
