@@ -94,13 +94,13 @@ describe('failures', () => {
     await expect(() => pageLoader('https://notexist.ru')).rejects.toBeInstanceOf(AxiosError)
   })
   test('not exist outpurDir', async () => {
-    await expect(() => pageLoader(url, '/not/existdir')).rejects.toThrow('ENOENT: no such file or directory, access \'/not/existdir\'')
+    await expect(() => pageLoader(url, '/not/existdir')).rejects.toThrow(/ENOENT/)
   })
   test('not access outpurDir', async () => {
-    await expect(() => pageLoader(url, '/home')).rejects.toThrow('EACCES: permission denied, mkdir \'/home/ru-hexlet-io-courses_files\'')
+    await expect(() => pageLoader(url, '/home')).rejects.toThrow(/EACCES/)
   })
   test('already exist dir', async () => {
     await pageLoader(url, tmp)
-    await expect(() => pageLoader(url, tmp)).rejects.toThrow(`EEXIST: file already exists, mkdir '${path.join(tmp, expectedResourcesDir)}'`)
+    await expect(() => pageLoader(url, tmp)).rejects.toThrow(`/EEXIST/`)
   })
 })

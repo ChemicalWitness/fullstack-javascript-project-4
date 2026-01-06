@@ -13,7 +13,7 @@ program
   .argument('<url>')
   .helpOption('-h, --help', 'display help for command')
   .action((url) => {
-    pageLoader(url, options.output)
+    pageLoader(url, program.opts().output)
       .then((result) => {
         console.log(`Success!`)
         console.log(`Downloaded to: ${result}`)
