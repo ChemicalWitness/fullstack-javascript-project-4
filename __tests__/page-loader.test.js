@@ -101,6 +101,6 @@ describe('failures', () => {
   })
   test('already exist dir', async () => {
     await pageLoader(url, tmp)
-    await expect(() => pageLoader(url, tmp)).rejects.toThrow(`/EEXIST/`)
+    await expect(() => pageLoader(url, tmp)).rejects.toThrow(/EEXIST/)
   })
 })
