@@ -57,7 +57,7 @@ describe('page-loader tests', () => {
     const resourcesDirPath = path.join(tmp, expectedResourcesDir)
 
     await expect(pagePath).toEqual(actualPagePath)
-    await expect(fsp.access(pagePath)).resolves.toBeUndefined()
+    await expect(fsp.access(pagePath)).resolves.not.toThrow()
 
     const expectedRead = await fsp.readFile(pathToFileFixtures, 'utf-8')
     const actualRead = await fsp.readFile(pagePath, 'utf-8')
@@ -73,7 +73,7 @@ describe('page-loader tests', () => {
     const cssFilePath = path.join(resourcesDirPath, expectedCssFile)
     const jsFilePath = path.join(resourcesDirPath, expectedJsFile)
 
-    await expect(fsp.access(pagePath)).resolves.toBeUndefined()
+    await expect(fsp.access(pagePath)).resolves.not.toThrow()
     const expectedRead = await fsp.readFile(pathToFileFixtures, 'utf-8')
     const actualRead = await fsp.readFile(pagePath, 'utf-8')
     expect(expectedRead).toBe(actualRead)
