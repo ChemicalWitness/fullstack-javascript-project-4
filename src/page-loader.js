@@ -12,6 +12,8 @@ const log = debug('page-loader')
 
 let htmlContent
 let $
+let localAssetsLinks
+let preparedLocalAssetslinks;
 
 const pageLoader = (url, output = process.cwd()) => {
   const absoluteDirPath = path.resolve(process.cwd(), output)
@@ -40,36 +42,36 @@ const pageLoader = (url, output = process.cwd()) => {
       log(`parse html and files`)
       $ = cheerio.load(htmlContent)
       log(`get info of assets`)
-      const localAssetsLinks = getLocalAssets($, url)
-      const preparedLocalAssetslinks = transformingLinks(url, localAssetsLinks, resourceData)
+      localAssetsLinks = getLocalAssets($, url)
+      preparedLocalAssetslinks = transformingLinks(url, localAssetsLinks, resourceData)
       log(`prepared html with local links assets`)
       localAssetsInHtml($, localAssetsLinks, preparedLocalAssetslinks)
 
       log(`create directory for assets`)
       return fsp.mkdir(resourcesPath)
-        .then(() => {
-          const absoluteLinksOfAssets = getAbsoluteLinks(url, localAssetsLinks)
-          log(`Downloading assets`)
+    })
+    .then(() => {
+      const absoluteLinksOfAssets = getAbsoluteLinks(url, localAssetsLinks)
+      log(`Downloading assets`)
 
-          const tasks = absoluteLinksOfAssets.map((link, i) => ({
-            title: link,
-            task: () => downloadAssets(link, path.join(output, preparedLocalAssetslinks[i])),
-          }))
-          const listrTasks = new Listr(tasks, { concurrent: true })
+      const tasks = absoluteLinksOfAssets.map((link, i) => ({
+        title: link,
+        task: () => downloadAssets(link, path.join(output, preparedLocalAssetslinks[i])),
+      }))
+      const listrTasks = new Listr(tasks, { concurrent: true })
 
-          return listrTasks.run().catch(() => {})
-        })
-        .then(() => {
-          const modifiedHtml = $.html()
-          const htmlFilePath = path.join(output, filename)
-          log(`rewrite html page ${htmlFilePath} with local assets`)
-          return fsp.writeFile(htmlFilePath, modifiedHtml)
-        })
-        .then(() => {
-          const htmlFilePath = path.join(output, filename)
-          log(`return html path and finish`)
-          return htmlFilePath
-        })
+      return listrTasks.run().catch(() => {})
+    })
+    .then(() => {
+      const modifiedHtml = $.html()
+      const htmlFilePath = path.join(output, filename)
+      log(`rewrite html page ${htmlFilePath} with local assets`)
+      return fsp.writeFile(htmlFilePath, modifiedHtml)
+    })
+    .then(() => {
+      const htmlFilePath = path.join(output, filename)
+      log(`return html path and finish`)
+      return htmlFilePath
     })
 }
 
