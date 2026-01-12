@@ -76,10 +76,10 @@ describe('page-loader tests', () => {
     const actualRead = await fsp.readFile(pagePath, 'utf-8')
     expect(expectedRead).toBe(actualRead)
 
-    await expect(fsp.access(resourcesDirPath)).resolves.toBeUndefined()
-    await expect(fsp.access(imageFilePath)).resolves.toBeUndefined()
-    await expect(fsp.access(cssFilePath)).resolves.toBeUndefined()
-    await expect(fsp.access(jsFilePath)).resolves.toBeUndefined()
+    await expect(fsp.access(resourcesDirPath)).resolves.not.toThrow()
+    await expect(fsp.access(imageFilePath)).resolves.not.toThrow()
+    await expect(fsp.access(cssFilePath)).resolves.not.toThrow()
+    await expect(fsp.access(jsFilePath)).resolves.not.toThrow()
 
     const htmlContent = await fsp.readFile(pagePath, 'utf-8')
     expect(htmlContent).toContain(`${expectedResourcesDir}/${expectedImageFile}`)
