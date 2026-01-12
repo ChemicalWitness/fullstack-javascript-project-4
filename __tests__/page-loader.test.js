@@ -48,10 +48,10 @@ describe('page-loader tests', () => {
 
   beforeEach(async () => {
     pagePath = path.join(tmp, expectedHtmlFile)
-    actualPagePath = await pageLoader(url, tmp)
   })
 
   test('page-loader specified directory', async () => {
+    actualPagePath = await pageLoader(url, tmp)
     const pathToFileFixtures = getFixturePath('ru-hexlet-io-courses-after.html')
 
     await expect(pagePath).toEqual(actualPagePath)
@@ -65,6 +65,8 @@ describe('page-loader tests', () => {
 
   test('page-loader current dir', async () => {
     process.chdir(tmp)
+    actualPagePath = await pageLoader(url)
+    await expect(pagePath).toEqual(actualPagePath)
     const pathToFileFixtures = getFixturePath('ru-hexlet-io-courses-after.html')
     const resourcesDirPath = path.join(tmp, expectedResourcesDir)
     const imageFilePath = path.join(resourcesDirPath, expectedImageFile)
