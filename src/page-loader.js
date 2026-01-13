@@ -44,11 +44,11 @@ const pageLoader = (url, output = process.cwd()) => {
     })
     .then(() => {
       log(`prepared html with local links assets`)
-      const [preparedLocalAssetslinks, absoluteLinksOfAssets] = prepareAssets($, url, resourceData)
+      const localAssets = prepareAssets($, url, resourceData)
       log(`Downloading assets`)
-      const tasks = absoluteLinksOfAssets.map((link, i) => ({
-        title: link,
-        task: () => downloadAssets(link, path.join(output, preparedLocalAssetslinks[i])),
+      const tasks = localAssets.map(({absoluteUrl, localPath}) => ({
+        title: absoluteUrl,
+        task: () => downloadAssets(absoluteUrl, path.join(output, localPath)),
       }))
       const listrTasks = new Listr(tasks, { concurrent: true })
 

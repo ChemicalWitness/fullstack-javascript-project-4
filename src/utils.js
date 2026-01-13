@@ -29,38 +29,39 @@ export const downloadAssets = (link, filepath) => {
 }
 
 export const prepareAssets = (cherrioHtmlFile, url, resourceDir) => {
+  const { origin: baseOrigin } = new URL(url)
   const localAssets = []
   Object.entries(ASSETS_ATTR).forEach(([tag, attr]) => {
     cherrioHtmlFile(tag).each((_, elem) => {
       const urlAsset = cherrioHtmlFile(elem).attr(attr)
-      if (urlAsset && isLocalResource(urlAsset, url)) {
-        localAssets.push({ elem, tag, urlAsset })
+      if (!urlAsset || !isLocalResource(urlAsset, url)) {
+        return
       }
-    })
-  })
-
-  const localAssetsLinks = []
-  const absoluteLinksFromAssets = []
-  const { origin: baseOrigin } = new URL(url)
-
-  localAssets.forEach(({ elem, tag, urlAsset }) => {
-    const assetsUrl = new URL(urlAsset, baseOrigin)
-    const absoluteUrl = assetsUrl.toString()
-    absoluteLinksFromAssets.push(absoluteUrl)
-
-    const extension = path.extname(assetsUrl.pathname) || '.html'
-    const pathWithoutExtension = assetsUrl.pathname.replace(/\.[^/.]+$/, '')
-    const resourceName = `${assetsUrl.hostname}${pathWithoutExtension}`
+      const absoluteUrl = new URL(urlAsset, baseOrigin).toString()
+      const assetsUrl = new URL(absoluteUrl)
+      const extension = path.extname(assetsUrl.pathname) || '.html'
+      const pathWithoutExtension = assetsUrl.pathname.replace(/\.[^/.]+$/, '')
+      const resourceName = `${assetsUrl.hostname}${pathWithoutExtension}`
       .replace(/[^a-zA-Z0-9]/g, '-')
       .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '')
 
-    const cleanResourceName = resourceName.replace(/^-+|-+$/g, '')
-    const transformedLink = `${cleanResourceName}${extension}`
-    const localPath = path.join(resourceDir, transformedLink)
-
-    localAssetsLinks.push(localPath)
+    const filename = `${resourceName}${extension}`
+    const localPath = path.join(resourceDir, filename)
 
     cherrioHtmlFile(elem).attr(ASSETS_ATTR[tag], localPath)
+
+    localAssets.push(
+      {
+        absoluteUrl,
+        localPath,
+        originalUrl: urlAsset,
+        tag,
+        filename
+      }
+    )
+
+    })
   })
-  return [localAssetsLinks, absoluteLinksFromAssets]
+  return localAssets
 }
