@@ -23,60 +23,44 @@ export const isLocalResource = (resourceUrl, baseUrl) => {
   return resourceHost === baseHost ? true : false
 }
 
-export const getLocalAssets = (cherrioHtmlFile, url) => {
-  const localAssets = []
-  Object.entries(ASSETS_ATTR).forEach(([tag, attr]) => {
-    cherrioHtmlFile(tag).each((_, elem) => {
-      const urlAsset = cherrioHtmlFile(elem).attr(attr)
-      localAssets.push({ elem, tag, urlAsset })
-    })
-  })
-  return localAssets.filter(({ urlAsset }) => urlAsset !== undefined && isLocalResource(urlAsset, url))
-}
-
-export const transformingLinks = (url, localAssets, assetsDirName) => {
-  const localAssetsLinks = []
-  const { origin: baseOrigin } = new URL(url)
-
-  localAssets.forEach(({ urlAsset }) => {
-    const assetsUrl = new URL(urlAsset, baseOrigin)
-
-    const extension = path.extname(assetsUrl.pathname) || '.html'
-    const pathWithoutExtension = assetsUrl.pathname.replace(/\.[^/.]+$/, '')
-    const resourceName = `${assetsUrl.hostname}${pathWithoutExtension}`
-      .replace(/[^a-zA-Z0-9]/g, '-')
-
-    const transformedLink = `${resourceName}${extension}`
-    localAssetsLinks.push(path.join(assetsDirName, transformedLink))
-  })
-
-  return localAssetsLinks
-}
-
-export const localAssetsInHtml = (cherrioHtml, localAssets, preparedLocalLinks) => {
-  localAssets.forEach(({ elem, tag }, i) => {
-    cherrioHtml(elem).attr(ASSETS_ATTR[tag], preparedLocalLinks[i])
-  })
-}
-
-export const getAbsoluteLinks = (url, localAssets) => {
-  const { origin: hostnameWithProtocol } = new URL(url)
-  const absoluteLinksFromAssets = []
-  localAssets.forEach(({ urlAsset }) => {
-    absoluteLinksFromAssets.push(new URL(urlAsset, hostnameWithProtocol).toString())
-  })
-  return absoluteLinksFromAssets
-}
-
 export const downloadAssets = (link, filepath) => {
   return axios.get(link, { responseType: `arraybuffer` })
     .then(data => fsp.writeFile(filepath, data.data))
 }
 
 export const prepareAssets = (cherrioHtmlFile, url, resourceDir) => {
-  const localAssets = getLocalAssets(cherrioHtmlFile, url)
-  const preparedLocalAssetslinks = transformingLinks(url, localAssets, resourceDir)
-  localAssetsInHtml(cherrioHtmlFile, localAssets, preparedLocalAssetslinks)
-  const absoluteLinksOfAssets = getAbsoluteLinks(url, localAssets)
-  return [preparedLocalAssetslinks, absoluteLinksOfAssets]
+  const localAssets = []
+  Object.entries(ASSETS_ATTR).forEach(([tag, attr]) => {
+    cherrioHtmlFile(tag).each((_, elem) => {
+      const urlAsset = cherrioHtmlFile(elem).attr(attr)
+      if (urlAsset && isLocalResource(urlAsset, url)) {
+        localAssets.push({ elem, tag, urlAsset })
+      }
+    })
+  })
+
+  const localAssetsLinks = []
+  const absoluteLinksFromAssets = []
+  const { origin: baseOrigin } = new URL(url)
+
+  localAssets.forEach(({ elem, tag, urlAsset }) => {
+    const assetsUrl = new URL(urlAsset, baseOrigin)
+    const absoluteUrl = assetsUrl.toString()
+    absoluteLinksFromAssets.push(absoluteUrl)
+
+    const extension = path.extname(assetsUrl.pathname) || '.html'
+    const pathWithoutExtension = assetsUrl.pathname.replace(/\.[^/.]+$/, '')
+    const resourceName = `${assetsUrl.hostname}${pathWithoutExtension}`
+      .replace(/[^a-zA-Z0-9]/g, '-')
+      .replace(/-+/g, '-')
+
+    const cleanResourceName = resourceName.replace(/^-+|-+$/g, '')
+    const transformedLink = `${cleanResourceName}${extension}`
+    const localPath = path.join(resourceDir, transformedLink)
+
+    localAssetsLinks.push(localPath)
+
+    cherrioHtmlFile(elem).attr(ASSETS_ATTR[tag], localPath)
+  })
+  return [localAssetsLinks, absoluteLinksFromAssets]
 }
