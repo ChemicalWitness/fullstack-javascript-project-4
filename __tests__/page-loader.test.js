@@ -12,21 +12,32 @@ const __dirname = dirname(__filename)
 const getFixturePath = filename => path.join(__dirname, '..', '__fixtures__', filename)
 nock.disableNetConnect()
 
+const mockData = [
+  {
+    url: '/courses',
+    filename: 'ru-hexlet-io-courses-before.html',
+  },
+  {
+    url: '/assets/professions/nodejs.png',
+    filename: 'ru-hexlet-io-assets-professions-nodejs.png',
+  },
+  {
+    url: '/assets/application.css',
+    filename: 'ru-hexlet-io-assets-application.css',
+  },
+  {
+    url: '/packs/js/runtime.js',
+    filename: 'ru-hexlet-io-packs-js-runtime.js',
+  },
+]
+
 beforeAll(async () => {
-  const resultFile = await fsp.readFile(getFixturePath('ru-hexlet-io-courses-before.html'), 'utf-8')
-  const imageBuffer = await fsp.readFile(getFixturePath('ru-hexlet-io-assets-professions-nodejs.png'))
-  const cssBuffer = await fsp.readFile(getFixturePath('ru-hexlet-io-assets-application.css'))
-  const jsBuffer = await fsp.readFile(getFixturePath('ru-hexlet-io-packs-js-runtime.js'))
-  nock('https://ru.hexlet.io')
+  const nockObj = nock('https://ru.hexlet.io')
     .persist()
-    .get('/courses')
-    .reply(200, resultFile)
-    .get('/assets/professions/nodejs.png')
-    .reply(200, imageBuffer, { 'Content-Type': 'image/png' })
-    .get('/assets/application.css')
-    .reply(200, cssBuffer)
-    .get('/packs/js/runtime.js')
-    .reply(200, jsBuffer)
+  mockData.forEach(({url, filename}) => {
+    nockObj.get(url)
+        .replyWithFile(200, getFixturePath(filename))
+  })
 })
 
 let tmp
