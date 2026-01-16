@@ -1,6 +1,7 @@
 import fsp from 'fs/promises'
 import axios from 'axios'
 import path from 'path'
+import * as cheerio from 'cheerio'
 
 const ASSETS_ATTR = {
   img: 'src',
@@ -17,39 +18,32 @@ export const buildResourceName = (resourceUrl) => {
   return `${resourceName.trim()}${extension}`
 }
 
-export const isLocalResource = (resourceUrl, baseUrl) => {
-  const resourceHost = new URL(resourceUrl, baseUrl).hostname
-  const baseHost = new URL(baseUrl).hostname
-  return resourceHost === baseHost ? true : false
-}
-
 export const downloadAssets = (link, filepath) => {
   return axios.get(link, { responseType: `arraybuffer` })
     .then(data => fsp.writeFile(filepath, data.data))
 }
 
-export const prepareAssets = (cherrioHtmlFile, url, resourceDir) => {
-  const { origin: baseOrigin } = new URL(url)
+export const prepareAssets = (htmlContent, url, resourceDir) => {
+  const { origin: baseOrigin, hostname: baseHostname } = new URL(url)
+  const $ = cheerio.load(htmlContent)
   const localAssets = []
   Object.entries(ASSETS_ATTR).forEach(([tag, attr]) => {
-    cherrioHtmlFile(tag).each((_, elem) => {
-      const urlAsset = cherrioHtmlFile(elem).attr(attr)
-      if (!urlAsset || !isLocalResource(urlAsset, url)) {
+    $(tag).each((_, elem) => {
+      const urlAsset = $(elem).attr(attr)
+      const {hostname: assetHostname} = new URL(urlAsset, url)
+      if (!urlAsset || assetHostname !== baseHostname) {
         return
       }
       const absoluteUrl = new URL(urlAsset, baseOrigin).toString()
-      const assetsUrl = new URL(absoluteUrl)
-      const extension = path.extname(assetsUrl.pathname) || '.html'
-      const pathWithoutExtension = assetsUrl.pathname.replace(/\.[^/.]+$/, '')
-      const resourceName = `${assetsUrl.hostname}${pathWithoutExtension}`
-      .replace(/[^a-zA-Z0-9]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-+|-+$/g, '')
+      const {ext, dir, name} = path.parse(absoluteUrl)
+      const resourceName = `${dir.replace(/^https?:\/\//, '')} ${name}`
+        .replace(/[^a-zA-Z0-9]/g, '-')
+        .replace(/-+/g, '-')
 
-    const filename = `${resourceName}${extension}`
+    const filename = `${resourceName}${ext || '.html'}`
     const localPath = path.join(resourceDir, filename)
 
-    cherrioHtmlFile(elem).attr(ASSETS_ATTR[tag], localPath)
+    $(elem).attr(ASSETS_ATTR[tag], localPath)
 
     localAssets.push(
       {
@@ -63,5 +57,6 @@ export const prepareAssets = (cherrioHtmlFile, url, resourceDir) => {
 
     })
   })
-  return localAssets
+  const modifiedHtml = $.html()
+  return {localAssets, modifiedHtml}
 }
