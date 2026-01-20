@@ -30,33 +30,32 @@ export const prepareAssets = (htmlContent, url, resourceDir) => {
   Object.entries(ASSETS_ATTR).forEach(([tag, attr]) => {
     $(tag).each((_, elem) => {
       const urlAsset = $(elem).attr(attr)
-      const {hostname: assetHostname} = new URL(urlAsset, url)
+      const { hostname: assetHostname } = new URL(urlAsset, url)
       if (!urlAsset || assetHostname !== baseHostname) {
         return
       }
       const absoluteUrl = new URL(urlAsset, baseOrigin).toString()
-      const {ext, dir, name} = path.parse(absoluteUrl)
+      const { ext, dir, name } = path.parse(absoluteUrl)
       const resourceName = `${dir.replace(/^https?:\/\//, '')} ${name}`
         .replace(/[^a-zA-Z0-9]/g, '-')
         .replace(/-+/g, '-')
 
-    const filename = `${resourceName}${ext || '.html'}`
-    const localPath = path.join(resourceDir, filename)
+      const filename = `${resourceName}${ext || '.html'}`
+      const localPath = path.join(resourceDir, filename)
 
-    $(elem).attr(ASSETS_ATTR[tag], localPath)
+      $(elem).attr(ASSETS_ATTR[tag], localPath)
 
-    localAssets.push(
-      {
-        absoluteUrl,
-        localPath,
-        originalUrl: urlAsset,
-        tag,
-        filename
-      }
-    )
-
+      localAssets.push(
+        {
+          absoluteUrl,
+          localPath,
+          originalUrl: urlAsset,
+          tag,
+          filename,
+        },
+      )
     })
   })
   const modifiedHtml = $.html()
-  return {localAssets, modifiedHtml}
+  return { localAssets, modifiedHtml }
 }

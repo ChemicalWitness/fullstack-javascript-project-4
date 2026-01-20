@@ -34,20 +34,24 @@ const mockData = [
 beforeAll(async () => {
   const nockObj = nock('https://ru.hexlet.io')
     .persist()
-  mockData.forEach(({url, filename}) => {
+  mockData.forEach(({ url, filename }) => {
     nockObj.get(url)
-        .replyWithFile(200, getFixturePath(filename))
+      .replyWithFile(200, getFixturePath(filename))
   })
 })
 
 let tmp
 
-const url = 'https://ru.hexlet.io/courses'
-const expectedHtmlFile = 'ru-hexlet-io-courses.html'
-const expectedResourcesDir = 'ru-hexlet-io-courses_files'
-const expectedImageFile = 'ru-hexlet-io-assets-professions-nodejs.png'
-const expectedCssFile = 'ru-hexlet-io-assets-application.css'
-const expectedJsFile = 'ru-hexlet-io-packs-js-runtime.js'
+const { url, htmlFile, resourcesDir, assets } = {
+  url: 'https://ru.hexlet.io/courses',
+  htmlFile: 'ru-hexlet-io-courses.html',
+  resourcesDir: 'ru-hexlet-io-courses_files',
+  assets: [
+    'ru-hexlet-io-assets-professions-nodejs.png',
+    'ru-hexlet-io-assets-application.css',
+    'ru-hexlet-io-packs-js-runtime.js',
+  ],
+}
 
 beforeEach(async () => {
   tmp = await fsp.mkdtemp(path.join(os.tmpdir(), 'page-loader-'))
@@ -58,7 +62,7 @@ describe('page-loader tests', () => {
   let actualPagePath
 
   beforeEach(async () => {
-    pagePath = path.join(tmp, expectedHtmlFile)
+    pagePath = path.join(tmp, htmlFile)
   })
 
   test('page-loader specified directory', async () => {
@@ -79,10 +83,8 @@ describe('page-loader tests', () => {
     actualPagePath = await pageLoader(url)
     await expect(pagePath).toEqual(actualPagePath)
     const pathToFileFixtures = getFixturePath('ru-hexlet-io-courses-after.html')
-    const resourcesDirPath = path.join(tmp, expectedResourcesDir)
-    const imageFilePath = path.join(resourcesDirPath, expectedImageFile)
-    const cssFilePath = path.join(resourcesDirPath, expectedCssFile)
-    const jsFilePath = path.join(resourcesDirPath, expectedJsFile)
+    const resourcesDirPath = path.join(tmp, resourcesDir)
+    const assetsPaths = assets.map(name => path.join(resourcesDir, name))
 
     await expect(fsp.access(pagePath)).resolves.not.toThrow()
     const expectedRead = await fsp.readFile(pathToFileFixtures, 'utf-8')
@@ -90,12 +92,12 @@ describe('page-loader tests', () => {
     expect(expectedRead).toBe(actualRead)
 
     await expect(fsp.access(resourcesDirPath)).resolves.not.toThrow()
-    await expect(fsp.access(imageFilePath)).resolves.not.toThrow()
-    await expect(fsp.access(cssFilePath)).resolves.not.toThrow()
-    await expect(fsp.access(jsFilePath)).resolves.not.toThrow()
+    for (const assetPath of assetsPaths) {
+      await expect(fsp.access(assetPath)).resolves.not.toThrow()
+    }
 
     const htmlContent = await fsp.readFile(pagePath, 'utf-8')
-    expect(htmlContent).toContain(`${expectedResourcesDir}/${expectedImageFile}`)
+    assets.forEach(name => expect(htmlContent).toContain(`${resourcesDir}/${name}`))
   })
 })
 

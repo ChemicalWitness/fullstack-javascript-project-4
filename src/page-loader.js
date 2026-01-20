@@ -26,8 +26,6 @@ const pageLoader = (url, output = process.cwd()) => {
 
   log('Starting...')
 
-  log(`creating directory for page`)
-
   return fsp.access(absoluteDirPath)
     .then(() => {
       log(`request the main page on ${url}`)
@@ -41,10 +39,10 @@ const pageLoader = (url, output = process.cwd()) => {
     })
     .then(() => {
       log(`prepared html with local links assets`)
-      const {localAssets, modifiedHtml} = prepareAssets(htmlContent, url, resourceData)
+      const { localAssets, modifiedHtml } = prepareAssets(htmlContent, url, resourceData)
       htmlContent = modifiedHtml
       log(`Downloading assets`)
-      const tasks = localAssets.map(({absoluteUrl, localPath}) => ({
+      const tasks = localAssets.map(({ absoluteUrl, localPath }) => ({
         title: absoluteUrl,
         task: () => downloadAssets(absoluteUrl, path.join(output, localPath)),
       }))
