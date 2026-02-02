@@ -13,8 +13,7 @@ export const buildResourceName = (resourceUrl) => {
   const urlObj = new URL(resourceUrl)
   const extension = path.extname(urlObj.pathname) || '.html'
   const pathWithoutExtension = urlObj.pathname.replace(/\.[^/.]+$/, '')
-  const resourceName = `${urlObj.hostname}${pathWithoutExtension}`
-    .replace(/[^a-zA-Z0-9]/g, '-')
+  const resourceName = slugify(`${urlObj.hostname}${pathWithoutExtension}`)
   return `${resourceName.trim()}${extension}`
 }
 
@@ -30,32 +29,34 @@ export const prepareAssets = (htmlContent, url, resourceDir) => {
   Object.entries(ASSETS_ATTR).forEach(([tag, attr]) => {
     $(tag).each((_, elem) => {
       const urlAsset = $(elem).attr(attr)
-      const { hostname: assetHostname } = new URL(urlAsset, url)
-      if (!urlAsset || assetHostname !== baseHostname) {
+      const absoluteUrl = new URL(urlAsset, baseOrigin)
+      if (!urlAsset || absoluteUrl.origin !== baseOrigin) {
         return
       }
-      const absoluteUrl = new URL(urlAsset, baseOrigin).toString()
-      const { ext, dir, name } = path.parse(absoluteUrl)
-      const resourceName = `${dir.replace(/^https?:\/\//, '')} ${name}`
-        .replace(/[^a-zA-Z0-9]/g, '-')
-        .replace(/-+/g, '-')
+      const { ext, dir, name } = path.parse(absoluteUrl.pathname.toString())
+      const resourceName = slugify(`${dir.replace(/^https?:\/\//, '')} ${name}`)
+        console.log(resourceName)
 
-      const filename = `${resourceName}${ext || '.html'}`
+      const filename = `${baseHostname.replace(/[^a-zA-Z0-9]/g, '-')}${resourceName}${ext ||'.html'}`
       const localPath = path.join(resourceDir, filename)
 
       $(elem).attr(ASSETS_ATTR[tag], localPath)
 
       localAssets.push(
         {
-          absoluteUrl,
+          absoluteUrl: absoluteUrl.toString(),
           localPath,
           originalUrl: urlAsset,
-          tag,
-          filename,
         },
       )
     })
   })
   const modifiedHtml = $.html()
   return { localAssets, modifiedHtml }
+}
+
+const slugify = (str) => {
+  return str
+    .replace(/[^a-zA-Z0-9_-]/g, '-')
+    .replace(/-+/g, '-');
 }
