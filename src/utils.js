@@ -35,9 +35,7 @@ export const prepareAssets = (htmlContent, url, resourceDir) => {
       }
       const { ext, dir, name } = path.parse(absoluteUrl.pathname.toString())
       const resourceName = slugify(`${dir.replace(/^https?:\/\//, '')} ${name}`)
-        console.log(resourceName)
-
-      const filename = `${baseHostname.replace(/[^a-zA-Z0-9]/g, '-')}${resourceName}${ext ||'.html'}`
+      const filename = `${baseHostname.replace(/[^a-zA-Z0-9]/g, '-')}${resourceName}${ext || '.html'}`
       const localPath = path.join(resourceDir, filename)
 
       $(elem).attr(ASSETS_ATTR[tag], localPath)
@@ -58,5 +56,5 @@ export const prepareAssets = (htmlContent, url, resourceDir) => {
 const slugify = (str) => {
   return str
     .replace(/[^a-zA-Z0-9_-]/g, '-')
-    .replace(/-+/g, '-');
+    .replace(/-+/g, '-')
 }

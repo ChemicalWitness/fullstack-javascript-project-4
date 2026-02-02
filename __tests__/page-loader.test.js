@@ -41,17 +41,9 @@ beforeAll(async () => {
 })
 
 let tmp
-
-const { url, htmlFile, resourcesDir, assets } = {
-  url: 'https://ru.hexlet.io/courses',
-  htmlFile: 'ru-hexlet-io-courses.html',
-  resourcesDir: 'ru-hexlet-io-courses_files',
-  assets: [
-    'ru-hexlet-io-assets-professions-nodejs.png',
-    'ru-hexlet-io-assets-application.css',
-    'ru-hexlet-io-packs-js-runtime.js',
-  ],
-}
+const url = 'https://ru.hexlet.io/courses'
+const htmlFile = 'ru-hexlet-io-courses.html'
+const resourcesDir = 'ru-hexlet-io-courses_files'
 
 beforeEach(async () => {
   tmp = await fsp.mkdtemp(path.join(os.tmpdir(), 'page-loader-'))
@@ -84,7 +76,8 @@ describe('page-loader tests', () => {
     await expect(pagePath).toEqual(actualPagePath)
     const pathToFileFixtures = getFixturePath('ru-hexlet-io-courses-after.html')
     const resourcesDirPath = path.join(tmp, resourcesDir)
-    const assetsPaths = assets.map(name => path.join(resourcesDir, name))
+
+    const assetsPaths = mockData.slice(1).map(({ filename }) => path.join(resourcesDir, filename))
 
     await expect(fsp.access(pagePath)).resolves.not.toThrow()
     const expectedRead = await fsp.readFile(pathToFileFixtures, 'utf-8')
@@ -97,7 +90,7 @@ describe('page-loader tests', () => {
     }
 
     const htmlContent = await fsp.readFile(pagePath, 'utf-8')
-    assets.forEach(name => expect(htmlContent).toContain(`${resourcesDir}/${name}`))
+    mockData.slice(1).forEach(({ filename }) => expect(htmlContent).toContain(`${resourcesDir}/${filename}`))
   })
 })
 
